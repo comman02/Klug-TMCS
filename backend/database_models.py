@@ -14,10 +14,11 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 
+from .config import settings # 설정 파일 임포트
+
 # --- 기본 설정 ---
 # 실제 애플리케이션에서는 이 URL을 설정 파일에서 관리해야 합니다.
-# MySQL 연결을 위한 URL 형식: mysql+pymysql://user:password@host/dbname
-DATABASE_URL = "mysql+pymysql://root:1234@localhost/simulation_db"
+# DATABASE_URL = "mysql+pymysql://root:1234@localhost/simulation_db"
 
 # 참고: SQLAlchemy의 JSON 타입은 모든 데이터베이스 백엔드에서 네이티브 JSON을 지원하지 않을 수 있습니다.
 # MySQL 5.7 이상에서는 JSON 타입이 지원됩니다.
@@ -98,11 +99,11 @@ class EventLogModel(Base):
 # --- 데이터베이스 및 테이블 생성 함수 ---
 def create_db_and_tables():
     # 실제 운영 환경에서는 Alembic과 같은 마이그레이션 도구를 사용하는 것이 좋습니다.
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(settings.DATABASE_URL) # 설정 객체에서 URL 사용
     Base.metadata.create_all(bind=engine)
     print("Database and tables created successfully.")
 
 if __name__ == "__main__":
     # 이 파일을 직접 실행하면 데이터베이스에 테이블이 생성됩니다.
-    # 주의: 실제 user, password, db 이름으로 DATABASE_URL을 수정해야 합니다.
+    # 주의: .env 파일에 실제 user, password, db 이름으로 DATABASE_URL을 설정해야 합니다.
     create_db_and_tables()

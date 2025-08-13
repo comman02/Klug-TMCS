@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .simulation_core import run_simulation_from_scenario
+from simulation_core import run_simulation_from_scenario
 
 app = FastAPI()
 

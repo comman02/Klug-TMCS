@@ -6,14 +6,18 @@ import Conveyor3D from './Conveyor3D';
 // Y=0 평면을 나타내는 Plane 객체를 컴포넌트 외부에서 한 번만 생성
 const groundPlane = new Plane(new Vector3(0, 1, 0), 0); // 법선 (0,1,0), 원점으로부터의 거리 0
 
-const DEFAULT_CONVEYOR_SIZE = [5, 0.2, 2]; // 컨베이어 기본 크기 정의
-
 const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
-  const { scene, camera, raycaster, mouse, gl } = useThree();
+  const { scene, camera, raycaster, mouse, gl, viewport } = useThree();
   const [isDraggingExisting, setIsDraggingExisting] = useState(false);
   const [draggedEntityId, setDraggedEntityId] = useState(null);
   const [collidingEntityId, setCollidingEntityId] = useState(null); // 충돌 상태 관리
   const [dragOffset, setDragOffset] = useState([0, 0, 0]); // 드래그 시작 시 마우스와 객체 중심의 오프셋
+
+  const defaultConveyorSize = useMemo(() => {
+    const viewportWidth = viewport.width;
+    // 예: viewport 너비의 40%를 컨베이어 너비로 사용
+    return [viewportWidth * 0.4, 0.2, 2]; 
+  }, [viewport.width]);
 
   const handleDrop = useCallback((event) => {
     event.preventDefault();
@@ -39,7 +43,7 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
 
     if (intersects) {
       const newPosition = [intersectionPoint.x, 0, intersectionPoint.z];
-      const newEntitySize = DEFAULT_CONVEYOR_SIZE; // 새 엔터티에 기본 크기 적용
+      const newEntitySize = defaultConveyorSize; // 새 엔터티에 기본 크기 적용
 
       const newEntityBox = new Box3().setFromCenterAndSize(
         new Vector3(...newPosition),
@@ -50,7 +54,7 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
       for (const existingEntity of entities) {
         const existingEntityBox = new Box3().setFromCenterAndSize(
           new Vector3(...existingEntity.position),
-          new Vector3(...(existingEntity.size || DEFAULT_CONVEYOR_SIZE)) // 기존 엔터티의 크기 사용
+          new Vector3(...(existingEntity.size || defaultConveyorSize)) // 기존 엔터티의 크기 사용
         );
         if (newEntityBox.intersectsBox(existingEntityBox)) {
           collision = true;
@@ -71,7 +75,7 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
         console.warn("엔터티가 겹칩니다. 다른 위치에 놓아주세요.");
       }
     }
-  }, [entities, setEntities, raycaster, mouse, camera, gl.domElement]);
+  }, [entities, setEntities, raycaster, mouse, camera, gl.domElement, defaultConveyorSize]);
 
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
@@ -96,7 +100,7 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
 
     if (intersects) {
       const newPosition = [intersectionPoint.x - dragOffset[0], 0, intersectionPoint.z - dragOffset[2]];
-      const draggedEntitySize = draggedEntity.size || DEFAULT_CONVEYOR_SIZE;
+      const draggedEntitySize = draggedEntity.size || defaultConveyorSize;
 
       const newEntityBox = new Box3().setFromCenterAndSize(
         new Vector3(...newPosition),
@@ -109,7 +113,7 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
 
         const existingEntityBox = new Box3().setFromCenterAndSize(
           new Vector3(...existingEntity.position),
-          new Vector3(...(existingEntity.size || DEFAULT_CONVEYOR_SIZE)) // 기존 엔터티의 크기 사용
+          new Vector3(...(existingEntity.size || defaultConveyorSize)) // 기존 엔터티의 크기 사용
         );
         if (newEntityBox.intersectsBox(existingEntityBox)) {
           collision = true;
@@ -124,13 +128,13 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
       }
 
       setEntities(prev =>
-        prev.map(entity =>
+        (prev || []).map(entity =>
           entity.id === draggedEntityId ? { ...entity, position: newPosition } : entity
         )
       );
       setSelectedEntity(prev => prev && prev.id === draggedEntityId ? { ...prev, position: newPosition } : prev);
     }
-  }, [isDraggingExisting, draggedEntityId, entities, setEntities, setSelectedEntity, raycaster, mouse, camera, gl.domElement, dragOffset]);
+  }, [isDraggingExisting, draggedEntityId, entities, setEntities, setSelectedEntity, raycaster, mouse, camera, gl.domElement, dragOffset, defaultConveyorSize]);
 
   const handlePointerUp = useCallback(() => {
     if (collidingEntityId) {
@@ -185,14 +189,14 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
   return (
     <>
       <primitive object={useMemo(() => new AxesHelper(10), [])} />
-      {entities.map((entity) => {
+      {(entities || []).map((entity) => {
         if (entity.type === 'CONVEYOR') {
           return (
             <Conveyor3D
               key={entity.id}
               position={entity.position}
               properties={entity.properties}
-              size={entity.size || DEFAULT_CONVEYOR_SIZE} // size prop 전달
+              size={entity.size || defaultConveyorSize} // size prop 전달
               isColliding={collidingEntityId === entity.id}
               onClick={() => setSelectedEntity(entity)}
               onPointerDown={(event) => handleConveyorDragStart(entity.id, entity.position, event)}

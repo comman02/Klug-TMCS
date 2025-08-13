@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Box, Cylinder } from '@react-three/drei';
 
-const Conveyor3D = ({ position, properties, size = [5, 0.2, 2], onClick, onPointerDown, isColliding }) => {
+const Conveyor3D = ({ position, properties, size, onClick, onPointerDown, isColliding }) => {
   const beltRef = useRef();
   const [isHovered, setIsHovered] = useState(false);
 
@@ -10,7 +10,7 @@ const Conveyor3D = ({ position, properties, size = [5, 0.2, 2], onClick, onPoint
 
   // 벨트 움직임 애니메이션
   useFrame((state, delta) => {
-    if (beltRef.current && beltRef.current.material.map) {
+    if (beltRef.current && beltRef.current.material && beltRef.current.material.map) {
       // 간단한 벨트 움직임 시뮬레이션
       beltRef.current.material.map.offset.x -= 0.5 * delta; // 속도 조절
     }

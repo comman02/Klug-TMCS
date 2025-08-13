@@ -9,6 +9,7 @@ const PropertiesPanel = ({ selectedEntity, onUpdate }) => {
       setFormData({
         name: selectedEntity.name || '',
         size: selectedEntity.size || [0, 0, 0],
+        position: selectedEntity.position || [0, 0, 0], // 위치값 추가
         properties: selectedEntity.properties || {},
       });
     } else {
@@ -32,6 +33,13 @@ const PropertiesPanel = ({ selectedEntity, onUpdate }) => {
     setFormData(prev => ({ ...prev, size: newSize }));
   };
 
+  const handlePositionChange = (e, index) => {
+    const { value } = e.target;
+    const newPosition = [...formData.position];
+    newPosition[index] = parseFloat(value) || 0;
+    setFormData(prev => ({ ...prev, position: newPosition }));
+  };
+
   const handlePropertyChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -44,6 +52,7 @@ const PropertiesPanel = ({ selectedEntity, onUpdate }) => {
     onUpdate(selectedEntity.id, {
       name: formData.name,
       size: formData.size,
+      position: formData.position, // 위치값 저장
       properties: formData.properties,
     });
     alert('변경 사항이 저장되었습니다!');
@@ -72,6 +81,14 @@ const PropertiesPanel = ({ selectedEntity, onUpdate }) => {
           <input type="number" value={formData.size[0]} onChange={(e) => handleSizeChange(e, 0)} style={{ width: '30%' }} />
           <input type="number" value={formData.size[1]} onChange={(e) => handleSizeChange(e, 1)} style={{ width: '30%' }} />
           <input type="number" value={formData.size[2]} onChange={(e) => handleSizeChange(e, 2)} style={{ width: '30%' }} />
+        </div>
+      </div>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>위치 (X/Y/Z):</label>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input type="number" value={formData.position[0]} onChange={(e) => handlePositionChange(e, 0)} style={{ width: '30%' }} />
+          <input type="number" value={formData.position[1]} onChange={(e) => handlePositionChange(e, 1)} style={{ width: '30%' }} />
+          <input type="number" value={formData.position[2]} onChange={(e) => handlePositionChange(e, 2)} style={{ width: '30%' }} />
         </div>
       </div>
       

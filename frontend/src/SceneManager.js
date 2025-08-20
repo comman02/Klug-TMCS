@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
-import { Vector3, Box3, Plane, AxesHelper } from 'three';
+import { Vector3, Box3, Plane } from 'three';
 import Conveyor3D from './Conveyor3D';
+import { GizmoHelper, GizmoViewport } from '@react-three/drei';
 
 // Y=0 평면을 나타내는 Plane 객체를 컴포넌트 외부에서 한 번만 생성
 const groundPlane = new Plane(new Vector3(0, 1, 0), 0); // 법선 (0,1,0), 원점으로부터의 거리 0
@@ -14,10 +15,8 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
   const [dragOffset, setDragOffset] = useState([0, 0, 0]); // 드래그 시작 시 마우스와 객체 중심의 오프셋
 
   const defaultConveyorSize = useMemo(() => {
-    const viewportWidth = viewport.width;
-    // 예: viewport 너비의 40%를 컨베이어 너비로 사용
-    return [viewportWidth * 0.4, 0.2, 2]; 
-  }, [viewport.width]);
+    return [10, 0.2, 10];
+  }, []);
 
   const handleDrop = useCallback((event) => {
     event.preventDefault();
@@ -188,7 +187,6 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
 
   return (
     <>
-      <primitive object={useMemo(() => new AxesHelper(10), [])} />
       {(entities || []).map((entity) => {
         if (entity.type === 'CONVEYOR') {
           return (
@@ -205,6 +203,12 @@ const SceneManager = ({ entities, setEntities, setSelectedEntity }) => {
         }
         return null;
       })}
+      <GizmoHelper
+        alignment="top-left"
+        margin={[80, 80]}
+      >
+        <GizmoViewport axisColors={['red', 'green', 'blue']} labelColor="black" />
+      </GizmoHelper>
     </>
   );
 };
